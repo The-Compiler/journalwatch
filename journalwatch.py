@@ -61,6 +61,8 @@ def read_config():
                     is_header = False
                 else:
                     cur_filters.append(re.compile(line.rstrip('\n')))
+        if header is not None and cur_filters:
+            filters[header] = cur_filters
     return filters
 
 
