@@ -71,11 +71,11 @@ def read_patterns(iterable):
         objects. Value can be a string or a regex object.
     """
     # The output dict
-    filters = {}
+    patterns = {}
     # Whether the next line is a header (key = value)
     is_header = True
-    # The filters for the current block
-    cur_filters = []
+    # The patterns for the current block
+    cur_patterns = []
     # The current header
     header = None
     for line in iterable:
@@ -84,11 +84,11 @@ def read_patterns(iterable):
             pass
         elif not line.strip():
             # An empty line starts a new block and saves the accumulated
-            # filters.
+            # patterns.
             is_header = True
-            if header is not None and cur_filters:
-                filters[header] = cur_filters
-            cur_filters = []
+            if header is not None and cur_patterns:
+                patterns[header] = cur_patterns
+            cur_patterns = []
             header = None
         elif is_header:
             # We got a non-empty line after an empty one so this is a header.
@@ -100,11 +100,11 @@ def read_patterns(iterable):
             is_header = False
         else:
             # We got a non-empty line anywhere else, so this is a filter.
-            cur_filters.append(re.compile(line.rstrip('\n')))
-    # Also add the last block to the filters
-    if header is not None and cur_filters:
-        filters[header] = cur_filters
-    return filters
+            cur_patterns.append(re.compile(line.rstrip('\n')))
+    # Also add the last block to the patterns
+    if header is not None and cur_patterns:
+        patterns[header] = cur_patterns
+    return patterns
 
 
 def format_entry(entry):
@@ -144,7 +144,7 @@ def filter_message(patterns, entry):
     """
     if 'MESSAGE' not in entry:
         return False
-    for (k, v), filters in patterns.items():
+    for (k, v), patterns in patterns.items():
         if k not in entry:
             # If the message doesn't have this key, we ignore it.
             continue
@@ -157,11 +157,11 @@ def filter_message(patterns, entry):
             if entry[k] != v:
                 continue
         # If we arrive here, the keys matched so we need to check these
-        # filters.
-        for filt in filters:
+        # patterns.
+        for filt in patterns:
             if filt.match(entry['MESSAGE']):
                 return True
-    # No filters on no key/value blocks matched.
+    # No patterns on no key/value blocks matched.
     return False
 
 
