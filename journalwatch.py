@@ -190,7 +190,11 @@ def read_patterns(iterable):
             header = None
         elif is_header:
             # We got a non-empty line after an empty one so this is a header.
-            k, v = line.split('=')
+            try:
+                k, v = line.split('=')
+            except ValueError:
+                raise JournalWatchError(
+                    "Got config line '{}' without header!".format(line))
             v = v.strip()
             if v.startswith('/') and v.endswith('/'):
                 v = re.compile(v[1:-1])
