@@ -34,10 +34,17 @@ XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME",
                                os.path.join(HOME, ".local", "share"))
 XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME",
                                  os.path.join(HOME, ".config"))
-PATTERN_FILE = os.path.join(XDG_CONFIG_HOME, 'journalwatch', 'patterns')
-CONFIG_FILE = os.path.join(XDG_CONFIG_HOME, 'journalwatch', 'config')
+config_dir = os.path.join(XDG_CONFIG_HOME, 'journalwatch')
+PATTERN_FILE = os.path.join(config_dir, 'patterns')
+CONFIG_FILE = os.path.join(config_dir, 'config')
 commandline_args = None
 
+
+class JournalWatchError(Exception):
+
+    """Exception raised on fatal errors."""
+
+    pass
 
 
 def parse_args():
@@ -163,8 +170,17 @@ def main():
     global commandline_args
     commandline_args = parse_args()
     output = []
-    with open(PATTERN_FILE) as f:
-        patterns = read_patterns(f)
+    if not os.path.exists(config_dir):
+        os.mkdir(config_dir)
+    if os.path.exists(PATTERN_FILE):
+        with open(PATTERN_FILE) as f:
+            patterns = read_patterns(f)
+    else:
+        patterns = []
+        open(PATTERN_FILE, 'w').close()
+    if not patterns:
+        raise JournalWatchError("No patterns defined in {}!".format(
+            PATTERN_FILE))
 
     j = journal.Reader()
     j.log_level(journal.LOG_INFO)
@@ -191,4 +207,8 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except JournalWatchError as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
