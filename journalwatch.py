@@ -23,6 +23,7 @@ import re
 import sys
 import socket
 import subprocess
+import argparse
 from systemd import journal
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
@@ -35,6 +36,21 @@ XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME",
                                  os.path.join(HOME, ".config"))
 PATTERN_FILE = os.path.join(XDG_CONFIG_HOME, 'journalwatch', 'patterns')
 CONFIG_FILE = os.path.join(XDG_CONFIG_HOME, 'journalwatch', 'config')
+commandline_args = None
+
+
+
+def parse_args():
+    """Parse the commandline arguments.
+
+    Return:
+        An argparse namespace.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', nargs='?', choices=['print', 'mail'],
+                        help="What to do with the filtered output (overrides "
+                             "config).", default=None)
+    return parser.parse_args()
 
 
 def read_patterns(iterable):
@@ -144,6 +160,8 @@ def filter_message(patterns, entry):
 
 def main():
     """Main entry point. Filter the log and output it or send a mail."""
+    global commandline_args
+    commandline_args = parse_args()
     output = []
     with open(PATTERN_FILE) as f:
         patterns = read_patterns(f)
@@ -157,7 +175,7 @@ def main():
             output.append(format_entry(entry))
     if not output:
         return
-    if '--mail' in sys.argv:
+    if commandline_args.action == 'mail':
         mail = MIMEText('\n'.join(output))
         mail['Subject'] = '[{}] - {} journal messages ({} - {})'.format(
             socket.gethostname(),
