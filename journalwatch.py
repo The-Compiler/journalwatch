@@ -16,13 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with journalwatch.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Filter error messages from systemd journal."""
+
 
 import os
 import os.path
 import re
 import sys
 import socket
+import shlex
 import subprocess
+import configparser
 import argparse
 from systemd import journal
 from datetime import datetime, timedelta
@@ -34,10 +38,10 @@ XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME",
                                os.path.join(HOME, ".local", "share"))
 XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME",
                                  os.path.join(HOME, ".config"))
-config_dir = os.path.join(XDG_CONFIG_HOME, 'journalwatch')
-PATTERN_FILE = os.path.join(config_dir, 'patterns')
-CONFIG_FILE = os.path.join(config_dir, 'config')
-commandline_args = None
+CONFIG_DIR = os.path.join(XDG_CONFIG_HOME, 'journalwatch')
+PATTERN_FILE = os.path.join(CONFIG_DIR, 'patterns')
+CONFIG_FILE = os.path.join(CONFIG_DIR, 'config')
+config = None
 
 
 class JournalWatchError(Exception):
@@ -48,16 +52,48 @@ class JournalWatchError(Exception):
 
 
 def parse_args():
-    """Parse the commandline arguments.
+    """Parse the commandline arguments and config.
+
+    Based on http://stackoverflow.com/a/5826167
 
     Return:
         An argparse namespace.
     """
-    parser = argparse.ArgumentParser()
+    defaults = {
+        'action': 'print',
+        'mail_from': 'journalwatch@{}'.format(socket.getfqdn()),
+        'mail_binary': 'sendmail',
+        'mail_args': '-toi',
+        'mail_subject': '[{hostname}] {count} journal messages ({start} - '
+                        '{end})',
+    }
+    conf_parser = argparse.ArgumentParser(
+        add_help=False,
+    )
+    _, remaining_argv = conf_parser.parse_known_args()
+    cfg = configparser.ConfigParser()
+    cfg.read(CONFIG_FILE)
+    defaults.update(cfg['DEFAULT'])
+
+    parser = argparse.ArgumentParser(
+        parents=[conf_parser],
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.set_defaults(**defaults)
     parser.add_argument('action', nargs='?', choices=['print', 'mail'],
-                        help="What to do with the filtered output (overrides "
-                             "config).", default=None)
-    return parser.parse_args()
+                        help="What to do with the filtered output "
+                        "(print/mail).", metavar='ACTION')
+    parser.add_argument('--mail_from', nargs='?',
+                        help="Sender of the mail.")
+    parser.add_argument('--mail_binary', nargs='?',
+                        help="Binary to call to send mails")
+    parser.add_argument('--mail_args', nargs='?',
+                        help="Arguments to pass to the mail binary")
+    parser.add_argument('--mail_subject', nargs='?',
+                        help="Subject for the mail.")
+    ns = parser.parse_args(remaining_argv)
+    return ns
 
 
 def read_patterns(iterable):
@@ -165,13 +201,15 @@ def filter_message(patterns, entry):
     return False
 
 
-def main():
-    """Main entry point. Filter the log and output it or send a mail."""
-    global commandline_args
-    commandline_args = parse_args()
-    output = []
-    if not os.path.exists(config_dir):
-        os.mkdir(config_dir)
+def parse_config_files():
+    """Parse the config and pattern files.
+
+    Return:
+        A (config, patterns) tuple.
+    """
+    cfg = parse_args()
+    if not os.path.exists(CONFIG_DIR):
+        os.mkdir(CONFIG_DIR)
     if os.path.exists(PATTERN_FILE):
         with open(PATTERN_FILE) as f:
             patterns = read_patterns(f)
@@ -181,27 +219,62 @@ def main():
     if not patterns:
         raise JournalWatchError("No patterns defined in {}!".format(
             PATTERN_FILE))
+    return cfg, patterns
 
+
+def get_journal(since):
+    """Open the journal and get a journal reader.
+
+    Args:
+        since: A datetime object where to start reading.
+    """
     j = journal.Reader()
     j.log_level(journal.LOG_INFO)
+    j.seek_realtime(since)
+    return j
+
+
+def send_mail(output, since):
+    """Send the log text via mail to the user.
+
+    Args:
+        output: A list of log lines.
+        since: A datetime object when the collection started.
+    """
+    text = '\n'.join(output)
+    mail = MIMEText(text)
+    mail['Subject'] = config.mail_subject.format(
+        hostname=socket.gethostname(),
+        count=len(output),
+        start=datetime.ctime(since),
+        end=datetime.ctime(datetime.now()))
+    mail['From'] = config.mail_from
+    try:
+        mail['To'] = config.mail_to
+    except AttributeError:
+        raise JournalWatchError("Can't send mail without mail_to set. "
+                                "Please set it either as argument or in "
+                                "{}.".format(CONFIG_FILE))
+    argv = [config.mail_binary]
+    argv += shlex.split(config.mail_args)
+    p = subprocess.Popen(argv, stdin=subprocess.PIPE)
+    p.communicate(mail.as_bytes())
+
+
+def main():
+    """Main entry point. Filter the log and output it or send a mail."""
+    global config
+    output = []
+    config, patterns = parse_config_files()
     yesterday = datetime.now() - timedelta(days=1, minutes=10)
-    j.seek_realtime(yesterday)
+    j = get_journal(yesterday)
     for entry in j:
         if not filter_message(patterns, entry):
             output.append(format_entry(entry))
     if not output:
         return
-    if commandline_args.action == 'mail':
-        mail = MIMEText('\n'.join(output))
-        mail['Subject'] = '[{}] {} journal messages ({} - {})'.format(
-            socket.gethostname(),
-            len(output),
-            datetime.ctime(yesterday),
-            datetime.ctime(datetime.now()))
-        mail['From'] = 'journalwatch@the-compiler.org'
-        mail['To'] = 'journalwatch@the-compiler.org'
-        p = subprocess.Popen(["sendmail", "-toi"], stdin=subprocess.PIPE)
-        p.communicate(mail.as_bytes())
+    if config.action == 'mail':
+        send_mail(output, yesterday)
     else:
         print('\n'.join(output))
 
