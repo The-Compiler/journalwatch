@@ -44,6 +44,69 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, 'config')
 config = None
 
 
+DEFAULT_PATTERNS = """
+# In this file, patterns for journalwatch are defined to blacklist all journal
+# messages which are not errors.
+#
+# Lines starting with '#' are comments. Inline-comments are not permitted.
+#
+# The patterns are separated into blocks delimited by empty lines. Each block
+# matches on a log entry field, and the patterns in that block then are matched
+# against all messages with a matching log entry field.
+#
+# The syntax of a block looks like this:
+#
+# <field> = <value>
+# <pattern>
+# [<pattern>]
+# [...]
+#
+# If <value> starts and ends with a slash, it is interpreted as a regular
+# expression, if not, it's an exact match. Patterns are always regular
+# expressions.
+#
+# Below are some useful examples. If you have a small set of users, you might
+# want to adjust things like "user \w" to something like "user (root|foo|bar)".
+#
+# The regular expressions are extended Python regular expressions, for details
+# see:
+#
+# https://docs.python.org/3.4/library/re.html#regular-expression-syntax
+# https://docs.python.org/3.4/howto/regex.html
+# http://doc.pyschools.com/html/regex.html
+#
+# The journal fields are explained in systemd.journal-fields(7).
+
+_SYSTEMD_UNIT = systemd-logind.service
+New session [a-z]?\d+ of user \w+\.
+Removed session [a-z]?\d+\.
+
+SYSLOG_IDENTIFIER = /(CROND|crond)/
+pam_unix\(crond:session\): session (opened|closed) for user \w+
+\(\w+\) CMD .*
+
+SYSLOG_IDENTIFIER = systemd
+(Stopped|Stopping|Starting|Started) .*
+(Created slice|Removed slice) user-\d*\.slice\.
+Received SIGRTMIN\+24 from PID .*
+(Reached target|Stopped target) .*
+Startup finished in \d*ms\.
+""".lstrip()
+
+DEFAULT_CONFIG = """
+# vim: ft=dosini
+#
+# This is the config for journalwatch. All options are defined in the [DEFAULT]
+# section.
+#
+# You can add any commandline argument to the config, without the '--'.
+# See  journalwatch --help for all arguments and their description.
+
+[DEFAULT]
+# mail_to = foobar@example.com
+""".lstrip()
+
+
 class JournalWatchError(Exception):
 
     """Exception raised on fatal errors."""
@@ -210,12 +273,16 @@ def parse_config_files():
     cfg = parse_args()
     if not os.path.exists(CONFIG_DIR):
         os.mkdir(CONFIG_DIR)
-    if os.path.exists(PATTERN_FILE):
+    if not os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'w') as f:
+            f.write(DEFAULT_CONFIG)
+    if not os.path.exists(PATTERN_FILE):
+        with open(PATTERN_FILE, 'w') as f:
+            f.write(DEFAULT_PATTERNS)
+        patterns = read_patterns(DEFAULT_PATTERNS.splitlines())
+    else:
         with open(PATTERN_FILE) as f:
             patterns = read_patterns(f)
-    else:
-        patterns = []
-        open(PATTERN_FILE, 'w').close()
     if not patterns:
         raise JournalWatchError("No patterns defined in {}!".format(
             PATTERN_FILE))
