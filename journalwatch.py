@@ -34,6 +34,7 @@ journalwatch comes with ABSOLUTELY NO WARRANTY.
 
 import os
 import os.path
+import time
 import re
 import sys
 import socket
@@ -52,8 +53,11 @@ XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME",
 XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME",
                                  os.path.join(HOME, ".config"))
 CONFIG_DIR = os.path.join(XDG_CONFIG_HOME, 'journalwatch')
+DATA_DIR = os.path.join(XDG_DATA_HOME, 'journalwatch')
+TIME_FILE = os.path.join(DATA_DIR, 'time')
 PATTERN_FILE = os.path.join(CONFIG_DIR, 'patterns')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config')
+
 config = None
 
 
@@ -137,6 +141,7 @@ def parse_args():
     """
     defaults = {
         'action': 'print',
+        'since': 'new',
         'mail_from': 'journalwatch@{}'.format(socket.getfqdn()),
         'mail_binary': 'sendmail',
         'mail_args': '-toi',
@@ -160,6 +165,12 @@ def parse_args():
     parser.add_argument('action', nargs='?', choices=['print', 'mail'],
                         help="What to do with the filtered output "
                         "(print/mail).", metavar='ACTION')
+    parser.add_argument('--since', nargs='?',
+                        help="Timespan to process. Possible values:\n"
+                        "all: Process the whole journal.\n"
+                        "new: Process everything new since the last "
+                        "invocation.\n"
+                        "<n>: Process everything in the past <n> seconds.\n")
     parser.add_argument('--mail_from', nargs='?',
                         help="Sender of the mail.")
     parser.add_argument('--mail_binary', nargs='?',
@@ -296,6 +307,8 @@ def parse_config_files():
     cfg = parse_args()
     if not os.path.exists(CONFIG_DIR):
         os.mkdir(CONFIG_DIR)
+    if not os.path.exists(DATA_DIR):
+        os.mkdir(DATA_DIR)
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'w') as f:
             f.write(DEFAULT_CONFIG)
@@ -312,31 +325,39 @@ def parse_config_files():
     return cfg, patterns
 
 
-def get_journal(since):
+def get_journal(since=None):
     """Open the journal and get a journal reader.
 
     Args:
         since: A datetime object where to start reading.
+               If None, the whole journal is read.
     """
     j = journal.Reader()
     j.log_level(journal.LOG_INFO)
-    j.seek_realtime(since)
+    if since is not None:
+        j.seek_realtime(since)
+    else:
+        j.seek_head()
     return j
 
 
-def send_mail(output, since):
+def send_mail(output, since=None):
     """Send the log text via mail to the user.
 
     Args:
         output: A list of log lines.
         since: A datetime object when the collection started.
     """
+    if since is None:
+        start = 'beginning of time'
+    else:
+        start = datetime.ctime(since)
     text = '\n'.join(output)
     mail = MIMEText(text)
     mail['Subject'] = config.mail_subject.format(
         hostname=socket.gethostname(),
         count=len(output),
-        start=datetime.ctime(since),
+        start=start,
         end=datetime.ctime(datetime.now()))
     mail['From'] = config.mail_from
     try:
@@ -351,20 +372,48 @@ def send_mail(output, since):
     p.communicate(mail.as_bytes())
 
 
+def parse_since():
+    """Get the timespan to use."""
+    if config.since == 'all':
+        return None
+    elif config.since == 'new':
+        if not os.path.exists(TIME_FILE):
+            return None
+        with open(TIME_FILE) as f:
+            since = datetime.fromtimestamp(float(f.read()))
+            # Add an extra minute just to be sure.
+            since -= timedelta(minutes=1)
+            return since
+    else:
+        try:
+            seconds = int(config.since)
+        except ValueError:
+            raise JournalWatchError("Can't parse {} seconds.".format(
+                config.since))
+        return datetime.now() - timedelta(seconds=seconds)
+
+
+def write_time_file():
+    """Write the execution time to a file."""
+    with open(TIME_FILE, 'w') as f:
+        f.write(str(time.time()))
+
+
 def main():
     """Main entry point. Filter the log and output it or send a mail."""
     global config
     output = []
     config, patterns = parse_config_files()
-    yesterday = datetime.now() - timedelta(days=1, minutes=10)
-    j = get_journal(yesterday)
+    since = parse_since()
+    write_time_file()
+    j = get_journal(since)
     for entry in j:
         if not filter_message(patterns, entry):
             output.append(format_entry(entry))
     if not output:
         return
     if config.action == 'mail':
-        send_mail(output, yesterday)
+        send_mail(output, since)
     else:
         print('\n'.join(output))
 
