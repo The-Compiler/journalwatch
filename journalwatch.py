@@ -15,7 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with journalwatch.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Filter error messages from systemd journal."""
+"""Filter error messages from systemd journal.
+
+Copyright 2014 Florian Bruhin (The Compiler) <me@the-compiler.org>
+
+For bugs, feature requests or contributions, mail <me@the-compiler.org>.
+The newest version is available at http://g.cmpl.cc/journalwatch
+
+journalwatch is free software, and you are welcome to redistribute it
+under the conditions of the GNU GPLv3 or later.
+
+You should have received a copy of the GNU General Public License
+along with journalwatch.  If not, see <http://www.gnu.org/licenses/>.
+
+journalwatch comes with ABSOLUTELY NO WARRANTY.
+"""
 
 
 import os
