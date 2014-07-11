@@ -155,6 +155,8 @@ def main():
     for entry in j:
         if not filter_message(patterns, entry):
             output.append(format_entry(entry))
+    if not output:
+        return
     if '--mail' in sys.argv:
         mail = MIMEText('\n'.join(output))
         mail['Subject'] = '[{}] - {} journal messages ({} - {})'.format(
