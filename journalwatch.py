@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 # Copyright 2014 Florian Bruhin (The Compiler) <me@the-compiler.org>
 #
 # journalwatch is free software: you can redistribute it and/or modify
