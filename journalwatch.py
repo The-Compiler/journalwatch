@@ -17,12 +17,14 @@
 
 
 import sys
+import socket
 from pprint import pprint
 from systemd import journal
 from datetime import datetime,timedelta
 import re
-import smtplib
+import subprocess
 from email.mime.text import MIMEText
+from subprocess import Popen
 
 
 def read_config():
@@ -110,12 +112,18 @@ for entry in j:
 
 # Send the content in a mail to root
 if '--mail' in sys.argv:
-    mail = MIMEText('\n'.join(mailContent))
-    mail['Subject'] = '[example.com] Logs from ' + datetime.ctime(yesterday) + ' to ' + datetime.ctime(datetime.now())
-    mail['From'] = 'journald@example.com'
-    mail['To'] = 'root@example.com'
-    server = smtplib.SMTP('localhost')
-    server.send_message(mail)
-    server.quit()
+    mail = MIMEText('\n'.join(output))
+    mail['Subject'] = '[{}] - {} journal messages ({} - {})'.format(
+        socket.gethostname(),
+        len(output),
+        datetime.ctime(yesterday),
+        datetime.ctime(datetime.now()))
+    mail['From'] = 'journalwatch@the-compiler.org'
+    mail['To'] = 'journalwatch@the-compiler.org'
+    p = subprocess.Popen(["sendmail", "-toi"], stdin=subprocess.PIPE)
+    p.communicate(mail.as_bytes())
+    #server = smtplib.SMTP('localhost')
+    #server.send_message(mail)
+    #server.quit()
 else:
     print('\n'.join(output))
