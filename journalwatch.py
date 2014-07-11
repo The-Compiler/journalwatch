@@ -173,6 +173,8 @@ def parse_args():
                         "<n>: Process everything in the past <n> seconds.\n")
     parser.add_argument('--mail_from', nargs='?',
                         help="Sender of the mail.")
+    parser.add_argument('--mail_to', nargs='?',
+                        help="Recipient of the mail.")
     parser.add_argument('--mail_binary', nargs='?',
                         help="Binary to call to send mails")
     parser.add_argument('--mail_args', nargs='?',
