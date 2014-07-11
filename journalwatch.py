@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
+# vim: set ft=python fileencoding=utf-8:
 
 # Copyright 2014 Florian Bruhin (The Compiler) <me@the-compiler.org>
 #
