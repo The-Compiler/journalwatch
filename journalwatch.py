@@ -193,7 +193,7 @@ def main():
         return
     if commandline_args.action == 'mail':
         mail = MIMEText('\n'.join(output))
-        mail['Subject'] = '[{}] - {} journal messages ({} - {})'.format(
+        mail['Subject'] = '[{}] {} journal messages ({} - {})'.format(
             socket.gethostname(),
             len(output),
             datetime.ctime(yesterday),
