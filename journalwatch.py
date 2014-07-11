@@ -402,7 +402,7 @@ def write_time_file():
         f.write(str(time.time()))
 
 
-def main():
+def run():
     """Main entry point. Filter the log and output it or send a mail."""
     global config
     output = []
@@ -421,9 +421,16 @@ def main():
         print('\n'.join(output))
 
 
-if __name__ == '__main__':
+def main():
+    """Wrapper around run() to display exceptions as errors."""
     try:
-        sys.exit(main())
+        run()
     except JournalWatchError as e:
         print(e, file=sys.stderr)
-        sys.exit(1)
+        return 1
+    else:
+        return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
