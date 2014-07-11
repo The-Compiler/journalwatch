@@ -17,6 +17,8 @@
 # along with journalwatch.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import os
+import os.path
 import re
 import sys
 import socket
@@ -26,13 +28,20 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
 
+HOME = os.path.expanduser("~")
+XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME",
+                               os.path.join(HOME, ".local", "share"))
+XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME",
+                                 os.path.join(HOME, ".config"))
+
+
 def read_config():
     filters = {}
     is_header = True
     cur_filters = []
     header = None
 
-    with open('filters') as f:
+    with open(os.path.join(XDG_CONFIG_HOME, 'journalwatch', 'patterns')) as f:
         for line in f:
             if line.startswith('#'):
                 pass
