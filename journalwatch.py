@@ -43,7 +43,7 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, 'config')
 config = None
 
 
-DEFAULT_PATTERNS = """
+DEFAULT_PATTERNS = r"""
 # In this file, patterns for journalwatch are defined to blacklist all journal
 # messages which are not errors.
 #
