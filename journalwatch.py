@@ -168,9 +168,6 @@ def main():
         mail['To'] = 'journalwatch@the-compiler.org'
         p = subprocess.Popen(["sendmail", "-toi"], stdin=subprocess.PIPE)
         p.communicate(mail.as_bytes())
-        #server = smtplib.SMTP('localhost')
-        #server.send_message(mail)
-        #server.quit()
     else:
         print('\n'.join(output))
 
