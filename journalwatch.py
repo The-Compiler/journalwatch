@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 # Copyright 2014 Florian Bruhin (The Compiler) <me@the-compiler.org>
 #
 # journalwatch is free software: you can redistribute it and/or modify
@@ -16,15 +17,13 @@
 # along with journalwatch.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import re
 import sys
 import socket
-from pprint import pprint
-from systemd import journal
-from datetime import datetime,timedelta
-import re
 import subprocess
+from systemd import journal
+from datetime import datetime, timedelta
 from email.mime.text import MIMEText
-from subprocess import Popen
 
 
 def read_config():
