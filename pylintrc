@@ -1,7 +1,7 @@
 # vim: ft=dosini fileencoding=utf-8:
 
 [MESSAGES CONTROL]
-disable=bad-builtin,star-args,global-statement
+disable=bad-builtin,star-args,global-statement,locally-disabled
 
 [BASIC]
 variable-rgx=[a-z_][a-z0-9_]{0,30}$

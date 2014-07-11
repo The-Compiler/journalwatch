@@ -339,7 +339,7 @@ def get_journal(since=None):
     if since is not None:
         j.seek_realtime(since)
     else:
-        j.seek_head()
+        j.seek_head()  # pylint: disable=no-member
     return j
 
 
