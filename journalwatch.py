@@ -140,7 +140,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         parents=[conf_parser],
         description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.set_defaults(**defaults)
     parser.add_argument('action', nargs='?', choices=['print', 'mail'],
@@ -153,7 +153,13 @@ def parse_args():
     parser.add_argument('--mail_args', nargs='?',
                         help="Arguments to pass to the mail binary")
     parser.add_argument('--mail_subject', nargs='?',
-                        help="Subject for the mail.")
+                        help="Subject for the mail. The following strings are "
+                        "replaced: \n"
+                        "{hostname}: The hostname of this machine.\n"
+                        "{count}: How many new messages were found.\n"
+                        "{start}: The timestamp when journalwatch began"
+                        "searching.\n"
+                        "{end}: The current time when sending the message.")
     ns = parser.parse_args(remaining_argv)
     return ns
 
