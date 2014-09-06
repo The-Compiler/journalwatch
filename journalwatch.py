@@ -40,6 +40,7 @@ import re
 import sys
 import socket
 import shlex
+import logging
 import subprocess
 import configparser
 import argparse
@@ -143,6 +144,7 @@ def parse_args():
     defaults = {
         'action': 'print',
         'since': 'new',
+        'loglevel': 'warning',
         'mail_from': 'journalwatch@{}'.format(socket.getfqdn()),
         'mail_binary': 'sendmail',
         'mail_args': '-toi',
@@ -172,6 +174,8 @@ def parse_args():
                         "new: Process everything new since the last "
                         "invocation.\n"
                         "<n>: Process everything in the past <n> seconds.\n")
+    parser.add_argument('--loglevel', help="Loglevel to use (critical/error/"
+                        "warning/info/debug)")
     parser.add_argument('--mail_from', nargs='?',
                         help="Sender of the mail.")
     parser.add_argument('--mail_to', nargs='?',
@@ -371,6 +375,10 @@ def send_mail(output, since=None):
                                 "{}.".format(CONFIG_FILE))
     argv = [config.mail_binary]
     argv += shlex.split(config.mail_args)
+    logging.debug("Sending mail from {} to {}.".format(
+        config.mail_from, config.mail_to))
+    logging.debug("Subject: {}".format(mail['Subject']))
+    logging.debug("Calling command {}".format(argv))
     p = subprocess.Popen(argv, stdin=subprocess.PIPE)
     p.communicate(mail.as_bytes())
 
@@ -407,6 +415,11 @@ def run():
     global config
     output = []
     config, patterns = parse_config_files()
+    try:
+        logging.basicConfig(level=getattr(logging, config.loglevel.upper()),
+                            format='%(asctime)s [%(levelname)s] %(message)s',)
+    except AttributeError:
+        raise JournalWatchError("Invalid loglevel {}".format(config.loglevel))
     since = parse_since()
     write_time_file()
     j = get_journal(since)
