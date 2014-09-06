@@ -12,7 +12,7 @@ setup(
     url='http://git.the-compiler.org/journalwatch/',
     author="Florian Bruhin",
     author_email='me@the-compiler.org',
-    version='0.1.1',
+    version='0.2',
     py_modules=['journalwatch'],
     scripts=['journalwatch'],
     license='GPL',
