@@ -49,6 +49,9 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
 
+__version__ = "0.2.1"
+
+
 HOME = os.path.expanduser("~")
 XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME",
                                os.path.join(HOME, ".local", "share"))
@@ -163,6 +166,7 @@ def parse_args():
         parents=[conf_parser],
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
+        prog='journalwatch',
     )
     parser.set_defaults(**defaults)
     parser.add_argument('action', nargs='?', choices=['print', 'mail'],
@@ -192,6 +196,8 @@ def parse_args():
                         "{start}: The timestamp when journalwatch began"
                         "searching.\n"
                         "{end}: The current time when sending the message.")
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {}'.format(__version__))
     ns = parser.parse_args(remaining_argv)
     return ns
 
