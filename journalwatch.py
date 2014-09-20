@@ -150,7 +150,7 @@ def parse_args():
         'loglevel': 'warning',
         'mail_from': 'journalwatch@{}'.format(socket.getfqdn()),
         'mail_binary': 'sendmail',
-        'mail_args': '-toi',
+        'mail_args': '-toi',  # Get "To:" from mail, ignore single dots.
         'mail_subject': '[{hostname}] {count} journal messages ({start} - '
                         '{end})',
     }
