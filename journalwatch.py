@@ -193,7 +193,7 @@ def parse_args():
                         "replaced: \n"
                         "{hostname}: The hostname of this machine.\n"
                         "{count}: How many new messages were found.\n"
-                        "{start}: The timestamp when journalwatch began"
+                        "{start}: The timestamp when journalwatch began "
                         "searching.\n"
                         "{end}: The current time when sending the message.")
     parser.add_argument('--version', action='version',
