@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 
-with open('README.txt') as f:
+with open('README.asciidoc') as f:
     description = f.read()
 
 
