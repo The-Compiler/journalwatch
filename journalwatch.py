@@ -44,12 +44,14 @@ import logging
 import subprocess
 import configparser
 import argparse
+from io import BytesIO
 from systemd import journal
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
+from email.generator import BytesGenerator
 
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 
 HOME = os.path.expanduser("~")
@@ -392,7 +394,19 @@ def send_mail(output, since=None):
     logging.debug("Subject: {}".format(mail['Subject']))
     logging.debug("Calling command {}".format(argv))
     p = subprocess.Popen(argv, stdin=subprocess.PIPE)
-    p.communicate(mail.as_bytes())
+    p.communicate(mail_to_bytes(mail))
+
+
+def mail_to_bytes(mail):
+    """Get bytes based on a mail.
+
+    Based on email.Message.as_bytes, but we reimplement it here because python
+    3.3 lacks it.
+    """
+    fp = BytesIO()
+    g = BytesGenerator(fp, mangle_from_=False, policy=mail.policy)
+    g.flatten(mail, unixfrom=False)
+    return fp.getvalue()
 
 
 def parse_since():
