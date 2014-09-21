@@ -1,5 +1,7 @@
 from distutils.core import setup
 
+import journalwatch
+
 
 with open('README.asciidoc') as f:
     description = f.read()
@@ -12,7 +14,7 @@ setup(
     url='http://git.the-compiler.org/journalwatch/',
     author="Florian Bruhin",
     author_email='me@the-compiler.org',
-    version='0.2',
+    version=journalwatch.__version__,
     py_modules=['journalwatch'],
     scripts=['journalwatch'],
     license='GPL',
