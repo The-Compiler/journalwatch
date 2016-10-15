@@ -12,7 +12,7 @@ patterns to match all log lines which are not interesting, and then prints all
 log lines not matching those patterns (or sends them by mail).
 
 When you start it the first time, it'll write the default pattern and config to
-`$XDG_CONFIG_HOME/.config/journalwatch` (`$XDG_CONFIG_HOME` is your home if
+`$XDG_CONFIG_HOME/journalwatch` (`$XDG_CONFIG_HOME` is `$HOME/.config` if
 unset). Details on how to configure journalwatch are available in these files.
 
 Dependencies
