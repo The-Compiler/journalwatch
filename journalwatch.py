@@ -299,10 +299,10 @@ def filter_message(patterns, entry):
         # Now check if the message key matches the key we're currently looking
         # at
         if hasattr(v, 'match'):
-            if not v.match(entry[k]):
+            if not v.match(str(entry[k])):
                 continue
         else:
-            if entry[k] != v:
+            if str(entry[k]) != v:
                 continue
         # If we arrive here, the keys matched so we need to check these
         # patterns.
