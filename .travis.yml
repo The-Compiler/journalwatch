@@ -8,9 +8,9 @@ python:
   - "nightly"
 
 install:
-  - pip install -U pytest
+  - pip install -U pytest pytest-cov
   - pip install .
 script:
-  - pytest test_journalwatch.py
+  - pytest --cov journalwatch test_journalwatch.py
 after_success:
   - bash <(curl -s https://codecov.io/bash)
