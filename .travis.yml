@@ -1,0 +1,15 @@
+language: python
+python:
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.5-dev"
+  - "3.6-dev"
+  - "nightly"
+
+install:
+  - pip install -U pytest
+  - pip install .
+script:
+  - pytest test_journalwatch.py
