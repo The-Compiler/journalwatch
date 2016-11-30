@@ -20,6 +20,7 @@ Dependencies
 
 - Python 3 (tested with 3.3 and 3.4, should work with >= 3.2)
 - `systemd` python module
+- `setuptools`
 - A working `sendmail`/MTA (http://msmtp.sourceforge.net/[msmtp] is easy to set
 up)
 
