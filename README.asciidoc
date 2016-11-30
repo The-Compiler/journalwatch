@@ -1,6 +1,9 @@
 journalwatch
 ============
 
+image:https://travis-ci.org/The-Compiler/journalwatch.svg?branch=travis["Build Status", link="https://travis-ci.org/The-Compiler/journalwatch"]
+image:https://codecov.io/gh/The-Compiler/journalwatch/branch/master/graph/badge.svg["codecov", link="https://codecov.io/gh/The-Compiler/journalwatch"]
+
 journalwatch is a tool which can find error messages in the systemd journal.
 
 It is similiar to tools like
@@ -18,7 +21,7 @@ unset). Details on how to configure journalwatch are available in these files.
 Dependencies
 ------------
 
-- Python 3 (tested with 3.3 and 3.4, should work with >= 3.2)
+- Python 3 (mainly tested with 3.5, should work with >= 3.2)
 - `systemd` python module
 - A working `sendmail`/MTA (http://msmtp.sourceforge.net/[msmtp] is easy to set
 up)
