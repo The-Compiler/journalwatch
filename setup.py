@@ -1,7 +1,7 @@
 import io
 import os.path
 import re
-from distutils.core import setup
+from setuptools import setup
 
 
 def read(*names, **kwargs):
@@ -30,7 +30,11 @@ setup(
     author_email='me@the-compiler.org',
     version=find_version('journalwatch.py'),
     py_modules=['journalwatch'],
-    scripts=['journalwatch'],
+    entry_points={
+        'console_scripts': [
+            'journalwatch=journalwatch:main',
+        ],
+    },
     license='GPL',
     long_description=read('README.asciidoc'),
     classifiers=[
