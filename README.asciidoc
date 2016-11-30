@@ -21,7 +21,7 @@ unset). Details on how to configure journalwatch are available in these files.
 Dependencies
 ------------
 
-- Python 3 (mainly tested with 3.5, should work with >= 3.2)
+- Python 3 (mainly tested with 3.5, should work with >= 3.3)
 - `systemd` python module
 - A working `sendmail`/MTA (http://msmtp.sourceforge.net/[msmtp] is easy to set
 up)
