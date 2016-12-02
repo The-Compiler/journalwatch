@@ -454,6 +454,14 @@ def write_time_file():
         f.write(str(time.time()))
 
 
+def print_output(output):
+    """Print the output to console safely."""
+    encoding = sys.stdout.encoding
+    for line in output:
+        line = line.encode(encoding, errors='replace').decode(encoding)
+        print(line)
+
+
 def run():
     """Main entry point. Filter the log and output it or send a mail."""
     global config
@@ -475,7 +483,7 @@ def run():
     if config.action == 'mail':
         send_mail(output, since)
     else:
-        print('\n'.join(output))
+        print_output(output)
 
 
 def main():
