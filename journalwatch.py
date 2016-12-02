@@ -292,7 +292,7 @@ def filter_message(patterns, entry):
     """
     if 'MESSAGE' not in entry:
         return False
-    for (k, v), patterns in patterns.items():
+    for (k, v), cur_patterns in patterns.items():
         if k not in entry:
             # If the message doesn't have this key, we ignore it.
             continue
@@ -306,7 +306,7 @@ def filter_message(patterns, entry):
                 continue
         # If we arrive here, the keys matched so we need to check these
         # patterns.
-        for filt in patterns:
+        for filt in cur_patterns:
             if filt.match(entry['MESSAGE']):
                 return True
     # No patterns on no key/value blocks matched.
