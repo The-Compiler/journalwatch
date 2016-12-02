@@ -321,14 +321,14 @@ def parse_config_files():
     """
     cfg = parse_args()
     if not os.path.exists(XDG_DATA_HOME):
-        os.mkdir(XDG_DATA_HOME, mode=0o700)
+        os.makedirs(XDG_DATA_HOME, mode=0o700)
     if not os.path.exists(XDG_CONFIG_HOME):
-        os.mkdir(XDG_CONFIG_HOME, mode=0o700)
+        os.makedirs(XDG_CONFIG_HOME, mode=0o700)
 
     if not os.path.exists(CONFIG_DIR):
-        os.mkdir(CONFIG_DIR)
+        os.makedirs(CONFIG_DIR)
     if not os.path.exists(DATA_DIR):
-        os.mkdir(DATA_DIR)
+        os.makedirs(DATA_DIR)
 
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'w') as f:
