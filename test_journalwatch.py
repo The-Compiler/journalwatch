@@ -79,6 +79,12 @@ def test_format_entry(entry, expected):
         {'PRIORITY': 1, 'MESSAGE': 'msg'},
         True
     ),
+    # Binary message (#5)
+    (
+        {('_SYSLOG_IDENTIFIER', 'bar'): [re.compile('msg')]},
+        {'_SYSLOG_IDENTIFIER': 'bar', 'MESSAGE': b'\xde\xad\xbe\xef'},
+        False
+    ),
 ])
 def test_filter_message(patterns, entry, filtered):
     assert journalwatch.filter_message(patterns, entry) == filtered

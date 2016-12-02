@@ -255,6 +255,24 @@ def read_patterns(iterable):
     return patterns
 
 
+def read_entry_message(entry, *, replace_empty=False):
+    """Safely read systemd log entries.
+
+    This function is used to guard against entries that systemd filters
+    as 'blob entries'.
+
+    Args:
+        entry: A systemd.journal.Reader entry.
+        replace_empty: returns string constant of 'EMPTY!' instead of ''
+    """
+    default = 'EMPTY!' if replace_empty else ''
+    message = entry.get('MESSAGE', default)
+    if isinstance(message, bytes):
+        # emulate journalctl slightly
+        message = "[journalwatch: {}B blob data]".format(len(message))
+    return message
+
+
 def format_entry(entry):
     """Format a systemd log entry to a string.
 
@@ -279,7 +297,7 @@ def format_entry(entry):
         name += '[{}]'.format(entry['_PID'])
     name += ':'
     words.append(name)
-    words.append(entry.get('MESSAGE', 'EMPTY!'))
+    words.append(read_entry_message(entry, replace_empty=True))
     return ' '.join(map(str, words))
 
 
@@ -307,7 +325,7 @@ def filter_message(patterns, entry):
         # If we arrive here, the keys matched so we need to check these
         # patterns.
         for filt in cur_patterns:
-            if filt.match(entry['MESSAGE']):
+            if filt.match(read_entry_message(entry)):
                 return True
     # No patterns on no key/value blocks matched.
     return False
