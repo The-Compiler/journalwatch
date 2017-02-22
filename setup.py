@@ -25,7 +25,7 @@ setup(
     name='journalwatch',
     description="A tool to get notified on error messages in the systemd "
                 "journal",
-    url='http://git.the-compiler.org/journalwatch/',
+    url='https://github.com/The-Compiler/journalwatch',
     author="Florian Bruhin",
     author_email='me@the-compiler.org',
     version=find_version('journalwatch.py'),
