@@ -36,7 +36,7 @@ setup(
         ],
     },
     license='GPL',
-    long_description=read('README.asciidoc'),
+    long_description=read('README.rst'),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
