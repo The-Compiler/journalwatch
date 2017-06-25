@@ -1,5 +1,5 @@
 import re
-import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -29,10 +29,10 @@ def test_read_patterns():
     ({
         '_SYSTEMD_UNIT': 'foo',
         'PRIORITY': 'prio',
-        '__REALTIME_TIMESTAMP': datetime.datetime.fromtimestamp(0),
+        '__REALTIME_TIMESTAMP': datetime.fromtimestamp(0, tz=timezone.utc),
         '_PID': 1337,
         'MESSAGE': "Hello World"
-    }, 'U Thu Jan  1 01:00:00 1970 prio foo [1337]: Hello World'),
+    }, 'U Thu Jan  1 00:00:00 1970 prio foo [1337]: Hello World'),
 
     ({'SYSLOG_IDENTIFIER': 'sys', 'MESSAGE': "Hello World"},
      'S sys: Hello World'),
