@@ -91,13 +91,17 @@ def test_filter_message(patterns, entry, filtered):
 
 
 def test_new_config_files(monkeypatch, tmpdir):
-    config_dir = tmpdir / 'config' / 'journalwatch'
-    data_dir = tmpdir / 'data' / 'journalwatch'
+    config_home = tmpdir / 'config'
+    data_home = tmpdir / 'data'
+    config_dir = config_home / 'journalwatch'
+    data_dir = data_home / 'journalwatch'
     config_file = config_dir / 'config'
     pattern_file = config_dir / 'patterns'
 
     monkeypatch.setattr(journalwatch, 'parse_args', lambda: None)
+    monkeypatch.setattr(journalwatch, 'XDG_DATA_HOME', str(data_home))
     monkeypatch.setattr(journalwatch, 'DATA_DIR', str(data_dir))
+    monkeypatch.setattr(journalwatch, 'XDG_CONFIG_HOME', str(config_home))
     monkeypatch.setattr(journalwatch, 'CONFIG_DIR', str(config_dir))
     monkeypatch.setattr(journalwatch, 'CONFIG_FILE', str(config_file))
     monkeypatch.setattr(journalwatch, 'PATTERN_FILE', str(pattern_file))
