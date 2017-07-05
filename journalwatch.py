@@ -149,6 +149,7 @@ def parse_args():
     defaults = {
         'action': 'print',
         'since': 'new',
+        'priority' : 6,
         'loglevel': 'warning',
         'mail_from': 'journalwatch@{}'.format(socket.getfqdn()),
         'mail_binary': 'sendmail',
@@ -180,8 +181,12 @@ def parse_args():
                         "new: Process everything new since the last "
                         "invocation.\n"
                         "<n>: Process everything in the past <n> seconds.\n")
-    parser.add_argument('--loglevel', help="Loglevel to use (critical/error/"
-                        "warning/info/debug)")
+    parser.add_argument('--priority', type=int, nargs='?', 
+                        help="Lowest priority of message to be considered.\n"
+                        "A number between 7 (debug), and 1 (emergency).")
+    parser.add_argument('--loglevel', nargs='?', 
+                        help="Level to use when sending messages to logger.\n"
+                        "Can be critical, error, warning, info or debug")
     parser.add_argument('--mail_from', nargs='?',
                         help="Sender of the mail.")
     parser.add_argument('--mail_to', nargs='?',
@@ -287,7 +292,7 @@ def format_entry(entry):
     if '__REALTIME_TIMESTAMP' in entry:
         words.append(datetime.ctime(entry['__REALTIME_TIMESTAMP']))
     if 'PRIORITY' in entry:
-        words.append(entry['PRIORITY'])
+        words.append('p'+str(entry['PRIORITY']))
     if '_SYSTEMD_UNIT' in entry:
         words.append(entry['_SYSTEMD_UNIT'])
     name = ''
@@ -364,15 +369,23 @@ def parse_config_files():
     return cfg, patterns
 
 
-def get_journal(since=None):
+def get_journal(since=None, priority=None):
     """Open the journal and get a journal reader.
 
     Args:
         since: A datetime object where to start reading.
                If None, the whole journal is read.
+        priority: A number between 1 and 7 for lowest priority
+               to consider.
+               If omited, defaults to "LOG_INFO", number 6.
     """
     j = journal.Reader()
-    j.log_level(journal.LOG_INFO)
+    if (int(priority) < 1):
+        j.log_level(1)
+    elif (int(priority) >= 1 and int(priority) <= 7):
+        j.log_level(int(priority))
+    else:
+        j.log_level(7)
     if since is not None:
         j.seek_realtime(since)
     else:
@@ -474,7 +487,7 @@ def run():
         raise JournalWatchError("Invalid loglevel {}".format(config.loglevel))
     since = parse_since()
     write_time_file()
-    j = get_journal(since)
+    j = get_journal(since, config.priority)
     for entry in j:
         if not filter_message(patterns, entry):
             output.append(format_entry(entry))
