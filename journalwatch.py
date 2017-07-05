@@ -172,30 +172,30 @@ def parse_args():
         prog='journalwatch',
     )
     parser.set_defaults(**defaults)
-    parser.add_argument('action', nargs='?', choices=['print', 'mail'],
+    parser.add_argument('action', choices=['print', 'mail'],
                         help="What to do with the filtered output "
                         "(print/mail).", metavar='ACTION')
-    parser.add_argument('--since', nargs='?',
+    parser.add_argument('--since',
                         help="Timespan to process. Possible values:\n"
                         "all: Process the whole journal.\n"
                         "new: Process everything new since the last "
                         "invocation.\n"
                         "<n>: Process everything in the past <n> seconds.\n")
-    parser.add_argument('--priority', nargs='?', 
+    parser.add_argument('--priority',
                         help="Lowest priority of message to be considered.\n"
                         "A number between 7 (debug), and 1 (emergency).")
-    parser.add_argument('--loglevel', nargs='?', 
+    parser.add_argument('--loglevel',
                         help="Level to use when sending messages to logger.\n"
                         "Can be critical, error, warning, info or debug")
-    parser.add_argument('--mail_from', nargs='?',
+    parser.add_argument('--mail_from',
                         help="Sender of the mail.")
-    parser.add_argument('--mail_to', nargs='?',
+    parser.add_argument('--mail_to',
                         help="Recipient of the mail.")
-    parser.add_argument('--mail_binary', nargs='?',
+    parser.add_argument('--mail_binary',
                         help="Binary to call to send mails")
-    parser.add_argument('--mail_args', nargs='?',
+    parser.add_argument('--mail_args',
                         help="Arguments to pass to the mail binary")
-    parser.add_argument('--mail_subject', nargs='?',
+    parser.add_argument('--mail_subject',
                         help="Subject for the mail. The following strings are "
                         "replaced: \n"
                         "{hostname}: The hostname of this machine.\n"
