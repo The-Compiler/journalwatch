@@ -181,7 +181,7 @@ def parse_args():
                         "new: Process everything new since the last "
                         "invocation.\n"
                         "<n>: Process everything in the past <n> seconds.\n")
-    parser.add_argument('--priority', type=int, nargs='?', 
+    parser.add_argument('--priority', nargs='?', 
                         help="Lowest priority of message to be considered.\n"
                         "A number between 7 (debug), and 1 (emergency).")
     parser.add_argument('--loglevel', nargs='?', 
@@ -377,15 +377,15 @@ def get_journal(since=None, priority=None):
                If None, the whole journal is read.
         priority: A number between 1 and 7 for lowest priority
                to consider.
-               If omited, defaults to "LOG_INFO", number 6.
+               If omitted, defaults to "LOG_INFO", number 6.
     """
     j = journal.Reader()
-    if (int(priority) < 1):
-        j.log_level(1)
-    elif (int(priority) >= 1 and int(priority) <= 7):
-        j.log_level(int(priority))
-    else:
-        j.log_level(7)
+    try:
+        priority = int(priority)
+    except ValueError:
+        raise JournalWatchError("Priority level invalid: '{}'".format(config.priority))
+    priority = max(1, min(priority, 7))
+    j.log_level(priority)
     if since is not None:
         j.seek_realtime(since)
     else:
