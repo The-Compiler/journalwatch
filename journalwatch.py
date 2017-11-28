@@ -184,9 +184,8 @@ def parse_args():
     parser.add_argument('--priority',
                         help="Lowest priority of message to be considered.\n"
                         "A number between 7 (debug), and 0 (emergency).")
-    parser.add_argument('--loglevel',
-                        help="Level to use when sending messages to logger.\n"
-                        "Can be critical, error, warning, info or debug")
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help="Enable verbose output.",)
     parser.add_argument('--mail_from',
                         help="Sender of the mail.")
     parser.add_argument('--mail_to',
@@ -480,11 +479,8 @@ def run():
     global config
     output = []
     config, patterns = parse_config_files()
-    try:
-        logging.basicConfig(level=getattr(logging, config.loglevel.upper()),
-                            format='%(asctime)s [%(levelname)s] %(message)s',)
-    except AttributeError:
-        raise JournalWatchError("Invalid loglevel {}".format(config.loglevel))
+    loglevel = logging.DEBUG if config.verbose else logging.WARNING
+    logging.basicConfig(level=loglevel, format='%(asctime)s [%(levelname)s] %(message)s',)
     since = parse_since()
     write_time_file()
     j = get_journal(since, config.priority)
