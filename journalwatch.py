@@ -75,8 +75,8 @@ DEFAULT_PATTERNS = r"""
 # Lines starting with '#' are comments. Inline-comments are not permitted.
 #
 # The patterns are separated into blocks delimited by empty lines. Each block
-# matches on a log entry field, and the patterns in that block then are matched
-# against all messages with a matching log entry field.
+# matches on exactly one log entry field, and the patterns in that block then
+# are matched against all messages with a matching log entry field.
 #
 # The syntax of a block looks like this:
 #
@@ -87,7 +87,8 @@ DEFAULT_PATTERNS = r"""
 #
 # If <value> starts and ends with a slash, it is interpreted as a regular
 # expression, if not, it's an exact match. Patterns are always regular
-# expressions.
+# expressions.  All regular expressions have to match the full string,
+# i.e., they start with an implicit "^" and end with "$".
 #
 # Below are some useful examples. If you have a small set of users, you might
 # want to adjust things like "user \w" to something like "user (root|foo|bar)".
@@ -320,8 +321,8 @@ def filter_message(patterns, entry):
             continue
         # Now check if the message key matches the key we're currently looking
         # at
-        if hasattr(v, 'match'):
-            if not v.match(str(entry[k])):
+        if hasattr(v, 'fullmatch'):
+            if not v.fullmatch(str(entry[k])):
                 continue
         else:
             if str(entry[k]) != v:
@@ -329,7 +330,7 @@ def filter_message(patterns, entry):
         # If we arrive here, the keys matched so we need to check these
         # patterns.
         for filt in cur_patterns:
-            if filt.match(read_entry_message(entry)):
+            if filt.fullmatch(read_entry_message(entry)):
                 return True
     # No patterns on no key/value blocks matched.
     return False
