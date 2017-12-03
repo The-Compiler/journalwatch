@@ -1,0 +1,11 @@
+language: generic
+services:
+  - docker
+env:
+  - PYTHON=python3.5
+  - PYTHON=python3.6
+
+install:
+  - docker build -t journalwatch/ci ci/"$PYTHON"
+script:
+  - docker run -v $(pwd):/build/ journalwatch/ci /usr/bin/"$PYTHON" /build/test_journalwatch.py
