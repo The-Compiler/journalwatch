@@ -25,6 +25,15 @@ Dependencies
 -  A working ``sendmail``/MTA (`msmtp <http://msmtp.sourceforge.net/>`_
    is easy to set up)
 
+Development
+-----------
+
+Development happens on `GitHub <https://github.com/The-Compiler/journalwatch>`_
+and contributions are very welcome!
+
+The tests are written using `pytest <https://docs.pytest.org/>`_ - to run them,
+install it and run ``pytest`` in the repository root.
+
 License
 -------
 
