@@ -6,4 +6,5 @@ set -x
 pip3 install --user systemd pytest
 
 # Run the tests
-exec "$PYTHON" -m pytest /build/test_journalwatch.py
+cd /build
+exec "$PYTHON" ~/.local/bin/pytest
