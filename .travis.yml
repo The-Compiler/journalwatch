@@ -3,9 +3,11 @@ services:
   - docker
 env:
   - PYTHON=python3.5
+    DIST=ubuntu:xenial
   - PYTHON=python3.6
+    DIST=ubuntu:artful
 
 install:
-  - docker build -t journalwatch/ci ci/"$PYTHON"
+  - docker pull "$DIST"
 script:
-  - docker run -v $PWD:/build/ -e PYTHON="$PYTHON" journalwatch/ci /build/ci/run.sh
+  - docker run -v $PWD:/build/ -e PYTHON="$PYTHON" "$DIST" /build/ci/run.sh
