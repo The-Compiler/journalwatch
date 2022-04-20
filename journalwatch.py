@@ -448,10 +448,16 @@ def parse_since():
         if not os.path.exists(TIME_FILE):
             return None
         with open(TIME_FILE) as f:
-            since = datetime.fromtimestamp(float(f.read()))
-            # Add an extra minute just to be sure.
-            since -= timedelta(minutes=1)
-            return since
+            data = f.read()
+        try:
+            since = datetime.fromtimestamp(float(data))
+        except ValueError as e:
+            raise JournalWatchError(
+                "Can't parse {}: {} - run 'journalwatch --since all print' to "
+                "recreate it.".format(TIME_FILE, e))
+        # Add an extra minute just to be sure.
+        since -= timedelta(minutes=1)
+        return since
     else:
         try:
             seconds = int(config.since)
