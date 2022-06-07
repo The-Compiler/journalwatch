@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python: python3.6
+            dist: ubuntu:bionic
+          - python: python3.8
+            dist: ubuntu:focal
+          #- python: python3.10
+          #  dist: ubuntu:jammy
+    steps:
+      - uses: actions/checkout@v3
+      - name: Pull docker container
+        run: docker pull ${{ matrix.dist }}
+      - name: Run test
+        run: docker run -v $PWD:/build/ -e PYTHON="${{ matrix.python }}" "${{ matrix.dist }}" /build/ci/run.sh
